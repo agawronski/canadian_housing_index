@@ -1,0 +1,12 @@
+name: canadian_housing_index
+title:
+username:
+account: agawronski
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 254143
+bundleId: 1163827
+url: https://agawronski.shinyapps.io/canadian_housing_index/
+when: 1515184442.56207
+asMultiple: FALSE
+asStatic: FALSE
