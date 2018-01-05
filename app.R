@@ -12,12 +12,15 @@ data$Value <- as.numeric(data$Value)
 dataS <- data[data$GEO == "Ontario",]
 dataS <- dataS[dataS$INDEX == "House only",]
 
-title <- "New Housing Price Index - Canada"
+title <- "Arima Forecast: New Housing Price Index - Canada"
 
 ui <- fluidPage(
   titlePanel(title, windowTitle = title),
   a("Click Here for original data from Statistics Canada", 
-  href = "http://www5.statcan.gc.ca/cansim/a26?lang=eng&retrLang=eng&id=3270056&&pattern=&stByVal=1&p1=1&p2=31&tabMode=dataTable&csid="),
+  href = "http://www5.statcan.gc.ca/cansim/a26?lang=eng&retrLang=eng&id=3270056&&pattern=&stByVal=1&p1=1&p2=31&tabMode=dataTable&csid=", target="_blank"),
+  tags$div(tags$br()),
+  a("Click Here for information about the 'forecast' R package used to create this", 
+    href = "http://pkg.robjhyndman.com/forecast/", target="_blank"),
   tags$div(tags$br()),
   selectInput(inputId = "GEO", "Choose GEO", as.list(unique(data$GEO))),
   selectInput(inputId = "INDEX", "Choose INDEX", as.list(unique(data$INDEX))),
@@ -26,36 +29,50 @@ ui <- fluidPage(
               value = 25, min = 1, max = 100),
   plotOutput("time_series"),
   verbatimTextOutput("model_summary"),
-  plotOutput("forecast")
+  plotOutput("forecast"),
+  verbatimTextOutput("forecast_details")
 )
 
 
 server <- function(input, output) {
-  output$time_series <- renderPlot({
+  dataSub <- reactive({
     dataS <- data[data$GEO == input$GEO,]
     dataS <- dataS[dataS$INDEX == input$INDEX,]
-    plot(dataS$date, 
-         dataS$Value, 
+  })
+  
+  output$time_series <- renderPlot({
+    plot(dataSub()$date, 
+         dataSub()$Value, 
          type = "l", 
-         col = randomColor(),
-         main = input$GEO,
+         # col = randomColor(),
+         col = "darkBlue",
+         main = paste(input$GEO, "-", input$INDEX),
          xlab = "Date", 
          ylab = "Housing Price Index")
   })
   
+  model_fit <- reactive({
+    auto.arima(dataSub()$Value)
+  })  
+  
   output$model_summary <- renderPrint({
-    dataS <- data[data$GEO == input$GEO,]
-    dataS <- dataS[dataS$INDEX == input$INDEX,]
-    fit <- auto.arima(dataS$Value)
-    print(summary(fit))
+    print(summary(model_fit()))
+  })
+  
+  yhat <- reactive({
+    forecast(model_fit(), h = input$num_months)
   })
   
   output$forecast <- renderPlot({
-    dataS <- data[data$GEO == input$GEO,]
-    dataS <- dataS[dataS$INDEX == input$INDEX,]
-    fit <- auto.arima(dataS$Value)
-    yhat <- forecast(fit, h = input$num_months)
-    plot(yhat)
+    plot(yhat())
+  })
+  
+  output$forecast_details <- renderPrint({
+    y_out <- data.frame(yhat())
+    y_out <- apply(y_out, 2, function(x) round(x, 1))
+    cols <- c("Point.Forecast", "Lo.95", "Lo.80", "Hi.80", "Hi.95")
+    y_out <- y_out[,cols]
+    y_out
   })
 }
 
