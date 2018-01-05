@@ -16,11 +16,14 @@ title <- "Arima Forecast: New Housing Price Index - Canada"
 
 ui <- fluidPage(
   titlePanel(title, windowTitle = title),
-  a("Click Here for original data from Statistics Canada", 
+  a("Click here for original data from Statistics Canada", 
   href = "http://www5.statcan.gc.ca/cansim/a26?lang=eng&retrLang=eng&id=3270056&&pattern=&stByVal=1&p1=1&p2=31&tabMode=dataTable&csid=", target="_blank"),
   tags$div(tags$br()),
   a("Click Here for information about the 'forecast' R package used to create this", 
     href = "http://pkg.robjhyndman.com/forecast/", target="_blank"),
+  tags$div(tags$br()),
+  a("Click here to view the R code on GitHub", 
+    href = "https://github.com/agawronski/canadian_housing_index", target="_blank"),
   tags$div(tags$br()),
   selectInput(inputId = "GEO", "Choose GEO", as.list(unique(data$GEO))),
   selectInput(inputId = "INDEX", "Choose INDEX", as.list(unique(data$INDEX))),
